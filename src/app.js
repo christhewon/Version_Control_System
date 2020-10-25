@@ -17,7 +17,7 @@
 //var $ = require('jquery');
     var app = express();  // Init an Express object.
     app.get('/', function (req, res) { // Set page-gen fcn for URL root request.
-        res.sendFile('html_code.html', { root : __dirname});
+        res.sendFile('index.html', { root : __dirname});
         //res.sendFile('javascript.js', { root : __dirname});
     });
     //app.use('/js', express.static(__dirname + './javascript.js'));
@@ -60,7 +60,7 @@
             setTimeout(function () {
                 fileWalker(startDirectory, endDirectory) // change back to end if wrong
             }, 1000);
-            resp.sendFile('html_code.html', { root : __dirname});
+            resp.sendFile('index.html', { root : __dirname});
         }
 
 
