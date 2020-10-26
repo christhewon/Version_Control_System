@@ -37,8 +37,10 @@
         var artIds = []
         var relativePaths =[]
 
-        var userInput = req.query.input_text //save into a file with date and time for manifest file
+        // save into a file with date and time for manifest file
+        var userInput = req.query.input_text
         var splitInput = userInput.split(" ")
+
         //maybe not here, creat once know crRepo?
         var command = splitInput[0]
         var startDirectory = ""
@@ -52,24 +54,18 @@
             if (!(fs.existsSync(endDirectory))) {
                 //fse.copy(startDirectory, endDirectory)
                 fs.mkdirSync(endDirectory)
-
             }
-            else {
 
-            }
+            // filewalker is getting called before the directory has time to be made
             setTimeout(function () {
-                fileWalker(startDirectory, endDirectory) // change back to end if wrong
+                fileWalker(startDirectory, endDirectory)
             }, 1000);
+
             resp.sendFile('index.html', { root : __dirname});
         }
 
 
-        // Structure of project
-        // So when you create a repo, a folder is made, and what exactly is inside that folder, another folder with all files?
-        // where exaclty is the manifest file
-        // Can you create a repo of a repo?
-        // Project source tree A/ B/ are in same project, so do they get stored in same repo folder? Fro ex if I crRepo on A/ or B/
-
+        // Goes through a directory and copies all the files into a new directory
         function fileWalker(startDirectory, endDirectory) { //startDirectory the location of the file we want to walk through
             const fileNames = fs.readdirSync(startDirectory) // C//User//Desktop//CopyThis
             fileNames.forEach(function (file) {
@@ -77,6 +73,7 @@
                 var oldDirectory = startDirectory.concat("\\", file)
                 console.log(file)
                 var stats = fs.statSync(oldDirectory) //stats is the stats of the oldDirectory
+
                 //Check if it is a file and it is not a dot file
                 if (stats.isFile() == true && !(dotArray[0].trim() == ".")) {
                     var extension = path.extname(oldDirectory) // Gets the extension name of the file at oldDirectory
@@ -90,76 +87,15 @@
                     var endingDirectory = endDirectory.concat("\\", artId, extension) // this is the name of ending directory with the artifact id
                     fse.copySync(oldDirectory, endingDirectory)
                     console.log("Goodbye")
-
-
-                    //fs.renameSync(oldDirectory, newDirectory) //renames directory with artID
                 }
-                /*
-                setTimeout(function () {
-                    fileWalker(endDirectory)
-                }, 1000);
 
-                 */
-
+                // Recursive call if there is another folder in the current directory
                 if (stats.isDirectory() == true) {
                     fileWalker(oldDirectory, endDirectory)
                 }
 
-                /* dont need this if i add in previous if
-                if (dotArray[0].trim() == ".") {
-                    fs.unlinkSync(newDirectory)
-                }
-
-                 */
-
-                //createManifest(startDirectory)
-
-
             });
         }
-
-
-
-
-        //NEED TO: change in order so thath the files go into an allFiles folder instead od copying folder tree
-       /* function fileWalker(directory_name) { //directory_name the location of the file we want to walk through
-            const fileNames = fs.readdirSync(directory_name) // C//User//Desktop//CopyThis
-            fileNames.forEach(function (file) {
-                var dotArray = file.split("") //used later to check the dot files
-                var oldDirectory = directory_name.concat("\\", file)
-                var stats = fs.statSync(oldDirectory) //stats is the stats of the oldDirectory
-                if (stats.isFile() == true && !(dotArray[0].trim() == ".")) {
-                    var extension = path.extname(oldDirectory) // Gets the extension name of the file at oldDirectory
-                    const info = fs.readFileSync(oldDirectory, 'utf8') //contents of the file
-                    var artId = getArtifactID(info, oldDirectory, directory_name); //gets the art ID
-                    artIds.push(artId) // adds artIds to list used for createManifest
-                    relativePaths.push(directory_name) // adds directory names to list used for createManifest
-                    var newDirectory = directory_name.concat("\\", artId, extension) //creates new directory path
-                    fs.renameSync(oldDirectory, newDirectory) //renames directory with artID
-                }
-                /!*
-                setTimeout(function () {
-                    fileWalker(endDirectory)
-                }, 1000);
-
-                 *!/
-
-                if (stats.isDirectory() == true) {
-                    fileWalker(oldDirectory)
-                }
-
-                /!* dont need this if i add in previous if
-                if (dotArray[0].trim() == ".") {
-                    fs.unlinkSync(newDirectory)
-                }
-
-                 *!/
-
-                //createManifest(directory_name)
-
-
-            });
-        }*/
 
         function createManifest(directory) {
             //var manifestDirectory = fs.appendFile(directory.concat("\\", ".manifest.txt"), "")
@@ -207,13 +143,5 @@
         }
     })
 
-    //charcodeat()
-    //node code for file size of text file
-    //convert relative path
-    //checksum function
-    //manifest file has dot in front
-    //dot files dont get copied
-    // text area is used to type string commands
-    // button is used to send string command to node server
-    // cd Documents\Github\Version_Control_System\src
+
 
