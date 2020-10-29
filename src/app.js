@@ -104,15 +104,14 @@ function copyWithArtID(startFolder, endFolder, directories) { //startFolder the 
 
     // Iterates through each item in the startFolder
     fileNames.forEach(function (file) {
-        var dotArray = file.split(""); //used later to check the dot files //CAN CHANGE TO SUBSTRING??? CHECK LATER --------------
-
+        
         //the path or directory that led to the original project tree file
         var oldAbsolutePath = startFolder.concat("\\", file);
         console.log("file is: ", file);
         var stats = fs.statSync(oldAbsolutePath); //stats is the stats of the oldAbsolutePath
 
         // Check if it is a file and it is not a dot file (manifest file)
-        if (stats.isFile() == true && !(dotArray[0].trim() == ".")) {
+        if (stats.isFile() == true && file.substring(0,1).localeCompare(".") != 0) {
 
             // Gets the extension name of the file at oldAbsolutePath
             var extension = path.extname(oldAbsolutePath);
