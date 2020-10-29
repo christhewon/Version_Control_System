@@ -37,6 +37,8 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="javascript.nodejs.core.library.configured.version" value="12.18.4" />
+    <property name="javascript.nodejs.core.library.typings.version" value="12.19.2" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -52,6 +54,10 @@
       <workItem from="1603394621376" duration="4218000" />
       <workItem from="1603672147957" duration="1105000" />
       <workItem from="1603733796533" duration="3705000" />
+      <workItem from="1603739453327" duration="2018000" />
+      <workItem from="1603753928094" duration="7300000" />
+      <workItem from="1603821806228" duration="5068000" />
+      <workItem from="1603937572538" duration="1915000" />
     </task>
     <servers />
   </component>
@@ -69,5 +75,11 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="383" y="372" width="672" height="678" key="search.everywhere.popup" timestamp="1603761867386">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="383" y="372" width="672" height="678" key="search.everywhere.popup/0.0.2560.1400/2560.-158.1080.1880@0.0.2560.1400" timestamp="1603761867386" />
   </component>
 </project>

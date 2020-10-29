@@ -6,6 +6,7 @@
  Description: This file serves as the backend for our version control software and currently
                 only allows the creation of a repo.
  */
+
 var express = require('express'); // Load the Express builder fcn.
 //var bodyParser = require('body-parser')
 var fs = require('fs')
@@ -26,76 +27,117 @@ app.listen(3000, function () { // Set callback action fcn on network port.
     console.log('app.js listening on port 3000!');
 });
 
-var artIds = []
-var relativePaths =[]
+var artIds = [];
+var relativePaths = [];
+var userCommands = [];
+var month = 0;
+var day = 0;
+var year = 0;
+var hour = 0;
+var minute = 0;
+var second = 0;
+var manifestCount = 1;
+
+
 
 app.get('/userCmd', (req, resp) => {
-    var month = date.getMonth()
-    var day = date.getDate()
-    var year = date.getFullYear()
-    var hour = date.getHours()
-    var minute = date.getMinutes()
-    var second = date.getSeconds()
+    // Data used for manifest file
+    month = date.getMonth();
+    day = date.getDate();
+    year = date.getFullYear();
+    hour = date.getHours();
+    minute = date.getMinutes();
+    second = date.getSeconds();
 
+    // getting input from html div-form
+    var userInput = req.query.input_text;
 
+    // Adds command to array used later for manifest file
+    userCommands.push(userInput);
 
-    // save into a file with date and time for manifest file
-    var userInput = req.query.input_text
-    var splitInput = userInput.split(" ")
+    // Seperates the command, starting directory, ending directory
+    var splitInput = userInput.split(" ");
+    var command = splitInput[0];
+    var startDirectory = "";
+    var endDirectory = "";
 
-    //maybe not here, creat once know crRepo?
-    var command = splitInput[0]
-    var startDirectory = ""
-    var endDirectory = ""
+    // To keep track of the relative paths from the project source tree
+    var directories = [];
 
     if (command == "crRepo") {
 
-        console.log(userInput)
-        startDirectory = splitInput[1]
-        endDirectory = splitInput[2]
-        if (!(fs.existsSync(endDirectory))) {
-            //fse.copy(startDirectory, endDirectory)
-            fs.mkdirSync(endDirectory)
-        }
+        console.log(userInput);
+        startDirectory = splitInput[1];
+        endDirectory = splitInput[2];
 
         // filewalker is getting called before the directory has time to be made
         setTimeout(function () {
-            fileWalker(startDirectory, endDirectory)
+            fileWalker(startDirectory, endDirectory, directories)
+            console.log("Done file walking")
         }, 1000);
 
+        setTimeout(function () {
+            createManifest(endDirectory)
+        }, 2000);
+
+        // Sends back to html page
         resp.sendFile('index.html', { root : __dirname});
     }
 })
 
 // Goes through a directory and copies all the files into a new directory
-function fileWalker(startDirectory, endDirectory, direct) { //startDirectory the location of the file we want to walk through
-    const fileNames = fs.readdirSync(startDirectory) // C//User//Desktop//CopyThis
-    var directories = []
-    fileNames.forEach(function (file) {
-        var dotArray = file.split("") //used later to check the dot files
-        var oldDirectory = startDirectory.concat("\\", file)
-        console.log(file)
-        var stats = fs.statSync(oldDirectory) //stats is the stats of the oldDirectory
 
-        // Check if it is a file and it is not a dot file
+
+function fileWalker(startFolder, endFolder, directories) { //startFolder the location of the file we want to walk through
+    const fileNames = fs.readdirSync(startFolder); // C//User//Desktop//CopyThis
+    var relativePath = "";
+
+    // Iterates through each item in the startFolder
+    fileNames.forEach(function (file) {
+        var dotArray = file.split(""); //used later to check the dot files
+
+        //the path or directory that led to the original project tree file
+        var oldAbsolutePath = startFolder.concat("\\", file);
+        console.log("file is: ", file);
+        var stats = fs.statSync(oldAbsolutePath); //stats is the stats of the oldAbsolutePath
+
+        // Check if it is a file and it is not a dot file (manifest file)
         if (stats.isFile() == true && !(dotArray[0].trim() == ".")) {
 
-            var extension = path.extname(oldDirectory) // Gets the extension name of the file at oldDirectory
-            const info = fs.readFileSync(oldDirectory, 'utf8') //contents of the file
-            var artId = getArtifactID(info, oldDirectory, startDirectory); //gets the art ID
+            // Gets the extension name of the file at oldAbsolutePath
+            var extension = path.extname(oldAbsolutePath);
 
-            artIds.push(artId) // adds artIds to list used for createManifest
-            relativePaths.push(file) // adds relative path names to list used for createManifest
+            //contents of the file
+            const content = fs.readFileSync(oldAbsolutePath, 'utf8');
 
+            // Creates the artifact id for the file
+            var artId = getArtifactID(content, oldAbsolutePath, startFolder);
 
-            var endingDirectory = endDirectory.concat("\\", artId, extension) // this is the name of ending directory with the artifact id
-            fse.copySync(oldDirectory, endingDirectory)
-            console.log("Goodbye")
+            // adds artIds to list used for createManifest
+            artIds.push(artId);
+
+            relativePath = relativePath + "\\" + file;
+            relativePaths.push(relativePath); // adds relative path names to list used for createManifest
+
+            // The path or directory leading directly to the new file
+            var newAbsolutePath = endFolder.concat("\\", artId, extension);
+            fse.copySync(oldAbsolutePath, newAbsolutePath);
         }
 
         // Recursive call if there is another folder in the current directory
+        //Recursive call may make directories not work for certain files
         if (stats.isDirectory() == true) {
-            fileWalker(oldDirectory, endDirectory)
+            directories.push(file);
+            console.log("directories: ", directories);
+
+            if (directories.length > 0) {
+                console.log("Directories is greater than 0")
+                for ( i = 0; i < directories.length; i++) {
+                    relativePath = relativePath + "\\" + directories[i];
+                    console.log("Relative Path is now: ", relativePath);
+                }
+            }
+            fileWalker(oldAbsolutePath, endFolder, directories);
         }
 
     });
@@ -103,18 +145,24 @@ function fileWalker(startDirectory, endDirectory, direct) { //startDirectory the
 
 function createManifest(directory) {
     //var manifestDirectory = fs.appendFile(directory.concat("\\", ".manifest.txt"), "")
-    var manifestDirectory = directory.concat("\\", ".man<1>.rc")
+    console.log("Started creating manifest method");
+    var manifestDirectory = directory.concat("\\", ".man- ", manifestCount, ".rc");
+    manifestCount++;
 
-    var manifestData = "1) User Input: ".concat(userInput,"\n", "2) Date: ",month.toString(), "-", day.toString(), "-", year.toString()," ", "Time: ",
-        hour.toString(), ":", minute.toString(), ":", second.toString(), "3) ")
+    // Creating the data that will preside inside the manifest file
+    var manifestData = "1) User Input: ".concat(userCommands[0], "\n", "2) Date: ",month.toString(), "-", day.toString(), "-", year.toString()," ", "Time: ",
+        hour.toString(), ":", minute.toString(), ":", second.toString(), "\n","3) ");
+    console.log(artIds);
 
+    // Adding each Artifact Id and its relative path in the project source tree
     for (i = 0; i < artIds.length; i++) {
-        manifestData.concat("Artifact Id: ", artIds[i], "Relative Path: ", relativePaths[i])
+        manifestData = manifestData.concat("Artifact Id: ", artIds[i], " ", "Relative Path: ", relativePaths[i], "\n");
     }
 
+    // Wrties the data into the manifest file
     fs.writeFile(manifestDirectory, manifestData, 'utf-8', function(err, data) {
         if (err) throw err;
-        console.log('Done!');
+        console.log('Done with the manifest writing!');
     })
 }
 
