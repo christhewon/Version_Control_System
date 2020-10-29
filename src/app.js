@@ -58,8 +58,7 @@ app.get('/userCmd', (req, resp) => {
     // Seperates the command, starting directory, ending directory
     var splitInput = userInput.split(" ");
     var command = splitInput[0];
-    var startDirectory = "";
-    var endDirectory = "";
+
 
     // To keep track of the relative paths from the project source tree
     var directories = [];
@@ -67,34 +66,45 @@ app.get('/userCmd', (req, resp) => {
     if (command == "crRepo") {
 
         console.log(userInput);
-        startDirectory = splitInput[1];
-        endDirectory = splitInput[2];
+        var startDirectory = splitInput[1];
+        var endDirectory = splitInput[2];
 
-        // filewalker is getting called before the directory has time to be made
-        setTimeout(function () {
-            fileWalker(startDirectory, endDirectory, directories)
-            console.log("Done file walking")
-        }, 1000);
-
-        setTimeout(function () {
-            createManifest(endDirectory)
-        }, 2000);
+        createRepo(startDirectory, endDirectory, directories);
 
         // Sends back to html page
         resp.sendFile('index.html', { root : __dirname});
+
+    }
+    else if (command == "label ") {
+        var label = splitInput[1];
+        var repoLocation = splitInput[2];
+        var fileNameLabel = splitInput[3];
     }
 })
 
 // Goes through a directory and copies all the files into a new directory
 
+function createRepo(startDir, endDir, dir) {
+    // filewalker is getting called before the directory has time to be made
+    setTimeout(function () {
+        copyWithArtID(startDir, endDir, dir)
+        console.log("Done file walking")
+    }, 1000);
 
-function fileWalker(startFolder, endFolder, directories) { //startFolder the location of the file we want to walk through
+    setTimeout(function () {
+        createManifest(endDir)
+    }, 2000);
+
+}
+
+
+function copyWithArtID(startFolder, endFolder, directories) { //startFolder the location of the file we want to walk through
     const fileNames = fs.readdirSync(startFolder); // C//User//Desktop//CopyThis
     var relativePath = "";
 
     // Iterates through each item in the startFolder
     fileNames.forEach(function (file) {
-        var dotArray = file.split(""); //used later to check the dot files
+        var dotArray = file.split(""); //used later to check the dot files //CAN CHANGE TO SUBSTRING??? CHECK LATER --------------
 
         //the path or directory that led to the original project tree file
         var oldAbsolutePath = startFolder.concat("\\", file);
@@ -137,7 +147,7 @@ function fileWalker(startFolder, endFolder, directories) { //startFolder the loc
                     console.log("Relative Path is now: ", relativePath);
                 }
             }
-            fileWalker(oldAbsolutePath, endFolder, directories);
+            copyWithArtID(oldAbsolutePath, endFolder, directories);
         }
 
     });
