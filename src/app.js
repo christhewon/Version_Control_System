@@ -7,12 +7,13 @@
                 only allows the creation of a repo.
  */
 
-var express = require('express'); // Load the Express builder fcn.
+const express = require('express'); // Load the Express builder fcn.
 //var bodyParser = require('body-parser')
-var fs = require('fs')
+const fs = require('fs')
 const fse = require('fs-extra');
-var path = require('path');
-var date = new Date()
+const path = require('path');
+const date = new Date()
+const readline = require('readline')
 
 
 //var $ = require('jquery');
@@ -27,16 +28,16 @@ app.listen(3000, function () { // Set callback action fcn on network port.
     console.log('app.js listening on port 3000!');
 });
 
-var artIds = [];
-var relativePaths = [];
-var userCommands = [];
-var month = 0;
-var day = 0;
-var year = 0;
-var hour = 0;
-var minute = 0;
-var second = 0;
-var manifestCount = 1;
+let artIds = [];
+let relativePaths = [];
+let userCommands = [];
+let month = 0;
+let day = 0;
+let year = 0;
+let hour = 0;
+let minute = 0;
+let second = 0;
+let manifestCount = 1;
 
 
 
@@ -50,45 +51,88 @@ app.get('/userCmd', (req, resp) => {
     second = date.getSeconds();
 
     // getting input from html div-form
-    var userInput = req.query.input_text;
+    let userInput = req.query.input_text;
 
     // Adds command to array used later for manifest file
     userCommands.push(userInput);
 
     // Seperates the command, starting directory, ending directory
-    var splitInput = userInput.split(" ");
-    var command = splitInput[0];
+    let splitInput = userInput.split(" ");
+    let command = splitInput[0];
 
 
     // To keep track of the relative paths from the project source tree
-    var directories = [];
+    let directories = [];
 
     if (command == "crRepo") {
 
         console.log(userInput);
-        var startDirectory = splitInput[1];
-        var endDirectory = splitInput[2];
-
+        let startDirectory = splitInput[1];
+        let endDirectory = splitInput[2];
         createRepo(startDirectory, endDirectory, directories);
-
-        // Sends back to html page
-        resp.sendFile('index.html', { root : __dirname});
-
     }
-    else if (command == "label ") {
-        var label = splitInput[1];
-        var repoLocation = splitInput[2];
-        var fileNameLabel = splitInput[3];
+    else if (command == "label") {
+        let label = splitInput[1];
+        let repoLocation = splitInput[2];
+        let manNameLabel = splitInput[3];
+        //Label(label, repoLocation, manNameLabel);
+        // getLabels("C:\\Users\\Christopher\\Desktop\\test\\labels.txt")
     }
+    else if (command == "list") {
+        let repoLocation = splitInput[1]
+        List(repoLocation)
+    }
+
+    resp.sendFile('index.html', { root : __dirname});
 })
 
-// Goes through a directory and copies all the files into a new directory
+// Adds a label file for manifest files
+function Label(label, repoLocation, manifestName) {
+    console.log("Inside Label method")
+    let fileNames = fs.readdirSync(repoLocation);
+    let labelAbsolutePath = repoLocation.concat("\\", "label.txt");
+    if (!fs.existsSync(labelAbsolutePath)) {
+        console.log("It does not exist")
+        // Creates new label file  with the first line containing the manifestFile's name
+        fs.writeFileSync(labelAbsolutePath, manifestName.concat("\n"));
+    }
+    // Adds the new label for the manifest file to the label file
+    fs.appendFileSync(labelAbsolutePath, label.concat("\n"));
+
+    fileNames.forEach(function (file) {
+
+    });
+}
+
+function List(repoLocation) {
+    let absolutePath = repoLocation.concat("\\", "label.txt")
+    let labels = getLabels(absolutePath)
+    for (i = 0; i < labels.length; i++) {
+        // Make an html text area to show all the labels
+    }
+}
+
+// returns manifest file name as well as labels for the manifest file
+function getLabels(fileAbsolutePath) {
+    let labels = [] // Can i use 'let' in this case cause its getting returned
+    let readInterface = readline.createInterface({
+        input: fs.createReadStream(fileAbsolutePath),
+        output: process.stdout,
+        console: false
+    });
+
+    // adds all labels to array, including the manifest file name on the first line
+    readInterface.on('line', function(line) {
+        labels.push(line)
+    });
+    return labels
+}
+
 
 function createRepo(startDir, endDir, dir) {
     // filewalker is getting called before the directory has time to be made
     setTimeout(function () {
         copyWithArtID(startDir, endDir, dir)
-        console.log("Done file walking")
     }, 1000);
 
     setTimeout(function () {
@@ -100,27 +144,27 @@ function createRepo(startDir, endDir, dir) {
 
 function copyWithArtID(startFolder, endFolder, directories) { //startFolder the location of the file we want to walk through
     const fileNames = fs.readdirSync(startFolder); // C//User//Desktop//CopyThis
-    var relativePath = "";
+    let relativePath = "";
 
     // Iterates through each item in the startFolder
     fileNames.forEach(function (file) {
-        
+
         //the path or directory that led to the original project tree file
-        var oldAbsolutePath = startFolder.concat("\\", file);
+        let oldAbsolutePath = startFolder.concat("\\", file);
         console.log("file is: ", file);
-        var stats = fs.statSync(oldAbsolutePath); //stats is the stats of the oldAbsolutePath
+        let stats = fs.statSync(oldAbsolutePath); //stats is the stats of the oldAbsolutePath
 
         // Check if it is a file and it is not a dot file (manifest file)
         if (stats.isFile() == true && file.substring(0,1).localeCompare(".") != 0) {
 
             // Gets the extension name of the file at oldAbsolutePath
-            var extension = path.extname(oldAbsolutePath);
+            let extension = path.extname(oldAbsolutePath);
 
             //contents of the file
             const content = fs.readFileSync(oldAbsolutePath, 'utf8');
 
             // Creates the artifact id for the file
-            var artId = getArtifactID(content, oldAbsolutePath, startFolder);
+            let artId = getArtifactID(content, oldAbsolutePath, startFolder);
 
             // adds artIds to list used for createManifest
             artIds.push(artId);
@@ -129,7 +173,7 @@ function copyWithArtID(startFolder, endFolder, directories) { //startFolder the 
             relativePaths.push(relativePath); // adds relative path names to list used for createManifest
 
             // The path or directory leading directly to the new file
-            var newAbsolutePath = endFolder.concat("\\", artId, extension);
+            let newAbsolutePath = endFolder.concat("\\", artId, extension);
             fse.copySync(oldAbsolutePath, newAbsolutePath);
         }
 
@@ -155,11 +199,11 @@ function copyWithArtID(startFolder, endFolder, directories) { //startFolder the 
 function createManifest(directory) {
     //var manifestDirectory = fs.appendFile(directory.concat("\\", ".manifest.txt"), "")
     console.log("Started creating manifest method");
-    var manifestDirectory = directory.concat("\\", ".man- ", manifestCount, ".rc");
+    let manifestDirectory = directory.concat("\\", ".man-", manifestCount, ".rc");
     manifestCount++;
 
     // Creating the data that will preside inside the manifest file
-    var manifestData = "1) User Input: ".concat(userCommands[0], "\n", "2) Date: ",month.toString(), "-", day.toString(), "-", year.toString()," ", "Time: ",
+    let manifestData = "1) User Input: ".concat(userCommands[0], "\n", "2) Date: ",month.toString(), "-", day.toString(), "-", year.toString()," ", "Time: ",
         hour.toString(), ":", minute.toString(), ":", second.toString(), "\n","3) ");
     console.log(artIds);
 
@@ -176,23 +220,23 @@ function createManifest(directory) {
 }
 
 function getArtifactID(String, file, relativePath) {
-    var a = getCheckSum(String);
-    var b = getFileSize(file);
-    var c = getCheckSum(relativePath);
+    let a = getCheckSum(String);
+    let b = getFileSize(file);
+    let c = getCheckSum(relativePath);
     return "P".concat(a, "-L", b, "-C", c)
 
 }
 
 function getFileSize(fileDirectory) {
-    var stats = fs.statSync(fileDirectory)
-    var bytes = stats.size
+    let stats = fs.statSync(fileDirectory)
+    let bytes = stats.size
     return bytes
 }
 
 function getCheckSum(String) {
-    var weights = [1, 3, 7, 11];
-    var checkSum = 0;
-    var int = 0;
+    let weights = [1, 3, 7, 11];
+    let checkSum = 0;
+    let int = 0;
     for (i = 0; i < String.length; i++) {
         checkSum += String.charCodeAt(i) * weights[int];
 
