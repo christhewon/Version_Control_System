@@ -25,6 +25,13 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="package.json" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
@@ -39,7 +46,14 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="12.18.4" />
     <property name="javascript.nodejs.core.library.typings.version" value="12.19.2" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Christopher\Documents\GitHub\Version_Control_System\src" />
+      <recent name="C:\Users\Christopher\Documents\GitHub\Version_Control_System\src\views" />
+    </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -60,7 +74,10 @@
       <workItem from="1603937572538" duration="2334000" />
       <workItem from="1603946975650" duration="80000" />
       <workItem from="1603989844945" duration="13566000" />
-      <workItem from="1604165030389" duration="2954000" />
+      <workItem from="1604165030389" duration="2979000" />
+      <workItem from="1604192034765" duration="4427000" />
+      <workItem from="1604250330078" duration="13159000" />
+      <workItem from="1604272158900" duration="630000" />
     </task>
     <servers />
   </component>
@@ -80,9 +97,13 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="383" y="372" width="672" height="678" key="search.everywhere.popup" timestamp="1603761867386">
+    <state x="924" y="378" key="FileDocumentManager.FileCacheConflict" timestamp="1604251212542">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
-    <state x="383" y="372" width="672" height="678" key="search.everywhere.popup/0.0.2560.1400/2560.-158.1080.1880@0.0.2560.1400" timestamp="1603761867386" />
+    <state x="924" y="378" key="FileDocumentManager.FileCacheConflict/0.0.2560.1400/2560.-158.1080.1880@0.0.2560.1400" timestamp="1604251212542" />
+    <state x="383" y="372" width="672" height="678" key="search.everywhere.popup" timestamp="1604192820140">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="383" y="372" width="672" height="678" key="search.everywhere.popup/0.0.2560.1400/2560.-158.1080.1880@0.0.2560.1400" timestamp="1604192820140" />
   </component>
 </project>

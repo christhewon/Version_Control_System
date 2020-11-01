@@ -1,0 +1,64 @@
+<!--
+Authors
+Christopher Lee:  christopher.lee03@student.csulb.edu
+Christopher De Jong: christopher.dejong@student.csulb.edu,
+Helen To: helen.to@student.csulb.edu
+
+Description: This file serves as the frontend for our Version Control System. The user will
+                use a form to input their commands. Currently, it only support the create Repo Command
+-->
+
+
+<!DOCTYPE html>
+<html>
+
+<body style="background-color:powderblue;">
+
+<h1>Version Control System</h1>
+
+<h2>Options for VCS:</h2>
+<ul style="list-style-type:square;">
+    <li>crRepo</li>
+    <li>checkOut</li>
+    <li>checkIn</li>
+    <li>list</li>
+    <li>label</li>
+</ul>
+
+<p>TYPE: (option) (project path) (new project path) </p>
+<p>Ex. crRepo C:\Users\Christopher\Desktop\CopyThis C:\Users\Christopher\Desktop\CopyMade </p>
+
+<!-- <p>Type "crRepo" followed by a space and then the path for the project tree you would
+    like to create a repo for. Follow that up with a space and then the path for the location you want
+    the repo to be created in.</p> -->
+
+<div class="div-form">
+    <form action="/userCmd" method="get">
+        <input type="submit" value="Submit"> <! -- value is text on button -->
+        <input size=100 type="text" id="input_text" name="input_text">
+
+    </form>
+</div>
+
+<div class="list">
+    <h3>
+
+    </h3>
+
+    <p1>
+        <ul>
+
+        </ul>
+    </p1>
+</div>
+<!--    <form id="textbox" name="vcsbox" rows="50" cols="50"> Type Here </form>-->
+
+<!--    <button id = "submit" type="button">Submit</button>-->
+<!--    //Use from instead of textarea-->
+</body>
+
+<footer>
+
+
+</footer>
+</html>

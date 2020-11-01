@@ -9,17 +9,22 @@
 
 const express = require('express'); // Load the Express builder fcn.
 //var bodyParser = require('body-parser')
-const fs = require('fs')
+const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
-const date = new Date()
-const readline = require('readline')
+const date = new Date();
+const readline = require('readline');
+const ejs = require('ejs');
+
 
 
 //var $ = require('jquery');
 var app = express();  // Init an Express object.
+
+app.set('views', './views');
+app.set('view engine', 'ejs');
 app.get('/', function (req, res) { // Set page-gen fcn for URL root request.
-    res.sendFile('index.html', { root : __dirname});
+    res.render('index', { root : __dirname});
     //res.sendFile('javascript.js', { root : __dirname});
 });
 //app.use('/js', express.static(__dirname + './javascript.js'));
@@ -41,7 +46,7 @@ let manifestCount = 1;
 
 
 
-app.get('/userCmd', (req, resp) => {
+app.get('/userCmd', (req, res) => {
     // Data used for manifest file
     month = date.getMonth();
     day = date.getDate();
@@ -70,21 +75,27 @@ app.get('/userCmd', (req, resp) => {
         let startDirectory = splitInput[1];
         let endDirectory = splitInput[2];
         createRepo(startDirectory, endDirectory, directories);
+        res.render('index');
     }
     else if (command == "label") {
         let label = splitInput[1];
         let repoLocation = splitInput[2];
         let manNameLabel = splitInput[3];
-        //Label(label, repoLocation, manNameLabel);
+        Label(label, repoLocation, manNameLabel);
+        res.render('index');
         // getLabels("C:\\Users\\Christopher\\Desktop\\test\\labels.txt")
     }
     else if (command == "list") {
         let repoLocation = splitInput[1]
-        List(repoLocation)
-    }
+        var labels = List(repoLocation)
 
-    resp.sendFile('index.html', { root : __dirname});
-})
+        res.render('index', {manifestLabels: ['test1', 'test2', 'test3']});
+        //res.render('index', {manifestLabels:  labels});
+        //res.render("index", {"variable": labels})
+    }
+    res.render('index', {hello: "hello"});
+
+});
 
 // Adds a label file for manifest files
 function Label(label, repoLocation, manifestName) {
@@ -104,12 +115,13 @@ function Label(label, repoLocation, manifestName) {
     });
 }
 
-function List(repoLocation) {
+function List(repoLocation, response) {
     let absolutePath = repoLocation.concat("\\", "label.txt")
     let labels = getLabels(absolutePath)
-    for (i = 0; i < labels.length; i++) {
-        // Make an html text area to show all the labels
+    for (let i = 0; i < labels.length; i++) {
+
     }
+    return labels;
 }
 
 // returns manifest file name as well as labels for the manifest file
