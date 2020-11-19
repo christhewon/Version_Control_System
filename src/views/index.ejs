@@ -7,12 +7,11 @@ Helen To: helen.to@student.csulb.edu
 Description: This file serves as the frontend for our Version Control System. The user will
                 use a form to input their commands. Currently, it only support the create Repo Command
 -->
-
-
 <!DOCTYPE html>
 <html>
 
 <body style="background-color:powderblue;">
+
 
 <h1>Version Control System</h1>
 
@@ -38,6 +37,10 @@ Description: This file serves as the frontend for our Version Control System. Th
         <input size=100 type="text" id="input_text" name="input_text">
 
     </form>
+
+    <button action ="/listMan" method = "get">
+
+    </button>
 </div>
 
 <div class="list">
@@ -47,7 +50,12 @@ Description: This file serves as the frontend for our Version Control System. Th
 
     <p1>
         <ul>
+            <% manifestLabels.forEach(result =>{ %>
+                <li> <%= result %> </li>
+            <% }); %>
 
+
+            <%= testVar %>
         </ul>
     </p1>
 </div>
