@@ -3,8 +3,7 @@
  Christopher De Jong: christopher.dejong@student.csulb.edu,
  Helen To: helen.to@student.csulb.edu
 
- Description: This file serves as the backend for our version control software and currently
-                only allows the creation of a repo.
+ Description: This file serves as the backend for our version control software.
  */
 
 const express = require('express'); // Load the Express builder fcn.
@@ -46,7 +45,6 @@ let manifestCount = 1;
 let labels = [];
 
 global.manifestLabels = [];
-global.testVar = "Test Variable";
 
 
 
@@ -91,13 +89,8 @@ app.get('/userCmd', (req, res) => {
         let repoLocation = splitInput[1]
         let manifestName = splitInput[2]
         labels = List(repoLocation, manifestName)
-
-
-        console.log("Right before Render")
-        //res.render('index', {manifestLabels: ['test1', 'test2', 'test3']});
         res.render('index', {manifestLabels:  labels});
-        console.log("Render Complete")
-        //res.render("index", {"variable": labels})
+
     }
     else if (command == "checkIn") {
         let startDirectory = splitInput[1];
@@ -106,9 +99,11 @@ app.get('/userCmd', (req, res) => {
         res.render('index');
     }
     else if (command == "checkOut") {
-        let manifestDir = splitInput[1]
+        let repoLocation = splitInput[1]
         let endDirectory = splitInput[2]
-        checkOut(manifestDir, endDirectory);
+        let label = splitInput[3]
+        checkOut(repoLocation, endDirectory, label);
+        res.render('index');
     }
 
 
@@ -140,6 +135,7 @@ function Label(label, repoLocation, manifestName) {
     fs.appendFileSync(labelAbsolutePath, label.concat("\n"));
 }
 
+
 function List(repoLocation, manifestName) {
     let absolutePath = repoLocation.concat("\\", "label.", manifestName)
     let arr = [];
@@ -155,81 +151,72 @@ function List(repoLocation, manifestName) {
     return arr;
 }
 
+function findLabel(repoLocation, labelName) {
+    const fileNames = fs.readdirSync(repoLocation);
+    let manifestName = "";
+
+    fileNames.forEach(function (file) {
+        let fileDirectory = repoLocation.concat("\\", file);
+        let stats = fs.statSync(fileDirectory); //stats is the stats of the directory;
+        console.log("File name is: ", file);
+        if (stats.isFile() == true && file.substring(0,9).localeCompare("label.man") == 0) {
+            console.log("Inside label.man check");
+            const data = fs.readFileSync(fileDirectory, 'utf8')
+            if (data.includes(labelName.concat("\n"))) {
+                console.log("Found label");
+                let labelsList = data.split("\n");
+                console.log("Labels list[0] is: ", labelsList[0]);
+                manifestName = labelsList[0];
+            }
+        }
+    });
+    return manifestName;
+}
+
+
+function checkOut(repoLocation, endDir, label) {
+    let manifestFileName = findLabel(repoLocation, label);
+    console.log("manifestFileName is: ", manifestFileName);
+
+    let fileNames = fs.readdirSync(repoLocation);
+    let absoluteFilePath = repoLocation.concat("\\", manifestFileName);
+    console.log("Before forEach");
+    fileNames.forEach(function (file) {
+        console.log("Inside For Each");
+        console.log(file);
+        console.log(manifestFileName);
+        // file is .man-1.rc
+        // manifestFileName is .man-1
+        if (file == manifestFileName) {
+            let oldDirectory = repoLocation.concat("\\", file);
+            let data = fs.readFileSync(absoluteFilePath, 'utf8');
+            let splitData = data.split("\n");
+
+            console.log("Before for loop");
+            // index 3 is where the file paths start
+            for (let i = 3; i < splitData.length; i++) {
+                let lines = splitData[i].split(",");
+                let newEndDirectory = endDir.concat("\\", lines[1]);
+                //console.log("before mkdir");
+                //fs.mkdirSync(newEndDirectory);
+                console.log("before copyfilesync");
+                fse.copySync(oldDirectory, newEndDirectory);
+            }
+
+        }
+    });
+}
+
 /*
-// returns manifest file name as well as labels for the manifest file
-function getLabels(fileAbsolutePath) {
-    console.log("Inside getLabels")
-    let labels = [] // Can i use 'let' in this case cause its getting returned
-    let readInterface = readline.createInterface({
-        input: fs.createReadStream(fileAbsolutePath),
-        output: process.stdout,
-        console: false
-    });
-    console.log("read interface create done")
-
-    // adds all labels to array, including the manifest file name on the first line
-    readInterface.on('line', function(line) {
-        labels.push(line)
-        console.log("Line pushed: ", line)
-    });
-    
-    console.log("Right before Return")
-    return labels
-}
-*/
-
-
-function checkOut(manifestDir, endDir) {
-    let lines = [];
-    let files = [];
-    let artId = [];
-    let relPath = [];
-    let readInterface = readline.createInterface({
-        input: fs.createReadStream(manifestDir),
-        output: process.stdout,
-        console: false
-    });
-
-    // adds all labels to array, including the manifest file name on the first line
-    readInterface.on('line', function(line) {
-        lines.push(line);
-    });
-
-    setTimeout(function () {
-        readInterface.close();
-        readInterface.removeAllListeners();
-    }, 4000);
-
-
-    console.log("finished readInterface");
-
-    for(let i = 0; i < lines.length; i++) {
-        console.log("In first loop");
-        if (lines[i].substring(0,1) == "P") {
-            files.push(lines[i])
-        }
-    }
-
-    for(let i = 0; i < files.length; i++) {
-        let current = files[i].split(",")
-        artId.push(current[0])
-        relPath.push(current[1])
-    }
-
-    for(let i = 0; i < artId.length; i++) {
-        let absoluteFilePath = endDir.concat(relPath[i])
-        let e1 = manifestDir;
-        let e2 = manifestDir.split("\\");
-        console.log(e2);
-
-        let oldAbsolutePath = ""
-        for(let i = 0; i < e2.length - 1; i++) {
-            oldAbsolutePath.concat(e2[i], "\\")
-        }
-
-        fse.copySync(oldAbsolutePath, absoluteFilePath);
+function addBackSlash(directory) {
+    let newDirectory = "";
+    for (let i = 0; i < directory.length; i++) {
+        newDirectory.concat(directory.charAt(i))
+        if (directory.charAt(i) == "\\")
     }
 }
+
+ */
 
 function checkIn(startDir, endDir, dir) {
     clearFiles(endDir)
@@ -249,7 +236,6 @@ function createRepo(startDir, endDir, dir) {
     setTimeout(function () {
         copyWithArtID(startDir, endDir, dir)
     }, 1000);
-
 
 
     setTimeout(function () {
@@ -302,7 +288,7 @@ function copyWithArtID(startFolder, endFolder, directories) { //startFolder the 
             artIds.push(artId);
 
             relativePath = oldAbsolutePath;
-            let r1 = relativePath.split('\\\\');
+            let r1 = relativePath.split('\\');
             let r2 = r1[r1.length - 1]
             let r3 = r2.split('\\');
 
@@ -319,90 +305,13 @@ function copyWithArtID(startFolder, endFolder, directories) { //startFolder the 
         }
 
         // Recursive call if there is another folder in the current directory
-        //Recursive call may make directories not work for certain files
         if (stats.isDirectory() == true) {
-            /*
-            directories.push(file);
-            console.log("directories: ", directories);
-
-             */
-
-
             copyWithArtID(oldAbsolutePath, endFolder, directories);
-            /*
-            if (directories.length > 0) {
-                console.log("Directories is greater than 0")
-                for ( i = 0; i < directories.length; i++) {
-                    relativePath = relativePath + "\\" + directories[i];
-                    console.log("Relative Path is now: ", relativePath);
-                }
-            }
-
-             */
         }
 
     });
 }
 
-
-/*
-function copyWithArtID(startFolder, endFolder, directories) { //startFolder the location of the file we want to walk through
-    const fileNames = fs.readdirSync(startFolder); // C//User//Desktop//CopyThis
-    let relativePath = "";
-
-    // Iterates through each item in the startFolder
-    fileNames.forEach(function (file) {
-
-        //the path or directory that led to the original project tree file
-        let oldAbsolutePath = startFolder.concat("\\", file);
-        console.log("file is: ", file);
-        let stats = fs.statSync(oldAbsolutePath); //stats is the stats of the oldAbsolutePath
-
-        // Check if it is a file and it is not a dot file (manifest file)
-        if (stats.isFile() == true && file.substring(0,1).localeCompare(".") != 0) {
-
-            // Gets the extension name of the file at oldAbsolutePath
-            let extension = path.extname(oldAbsolutePath);
-
-            //contents of the file
-            const content = fs.readFileSync(oldAbsolutePath, 'utf8');
-
-            // Creates the artifact id for the file
-            let artId = getArtifactID(content, oldAbsolutePath, startFolder);
-
-            // adds artIds to list used for createManifest
-            artIds.push(artId);
-
-            relativePath = relativePath + "\\" + file;
-            relativePaths.push(relativePath); // adds relative path names to list used for createManifest
-
-            // The path or directory leading directly to the new file
-            let newAbsolutePath = endFolder.concat("\\", artId, extension);
-            fse.copySync(oldAbsolutePath, newAbsolutePath);
-        }
-
-        // Recursive call if there is another folder in the current directory
-        //Recursive call may make directories not work for certain files
-        if (stats.isDirectory() == true) {
-            directories.push(file);
-            console.log("directories: ", directories);
-
-
-            copyWithArtID(oldAbsolutePath, endFolder, directories);
-
-            if (directories.length > 0) {
-                console.log("Directories is greater than 0")
-                for ( i = 0; i < directories.length; i++) {
-                    relativePath = relativePath + "\\" + directories[i];
-                    console.log("Relative Path is now: ", relativePath);
-                }
-            }
-        }
-
-    });
-}
-
- */
 
 function createManifest(directory) {
     //var manifestDirectory = fs.appendFile(directory.concat("\\", ".manifest.txt"), "")
