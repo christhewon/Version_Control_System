@@ -41,7 +41,6 @@ let year = 0;
 let hour = 0;
 let minute = 0;
 let second = 0;
-let manifestCount = 1;
 let labels = [];
 
 global.manifestLabels = [];
@@ -109,11 +108,6 @@ app.get('/userCmd', (req, res) => {
 
 });
 
-app.get("/", function(req, res){
-    var hello = "Hello"
-    res.render("index.ejs", {exampleVar: hello});
-});
-
 /*
 app.get('/userQuery', (req, res) => {
     res.render('index', {data : {userQuery: req.params.userQuery}})
@@ -174,6 +168,9 @@ function findLabel(repoLocation, labelName) {
 }
 
 
+// Copy the right artid over not the actualfilename
+// makesure relative paths gets updated before creating manifest in the checkout as well as other methods
+
 function checkOut(repoLocation, endDir, label) {
     let manifestFileName = findLabel(repoLocation, label);
     console.log("manifestFileName is: ", manifestFileName);
@@ -196,6 +193,7 @@ function checkOut(repoLocation, endDir, label) {
             // index 3 is where the file paths start
             for (let i = 3; i < splitData.length; i++) {
                 let lines = splitData[i].split(",");
+                let path = lines[1]
                 let newEndDirectory = endDir.concat("\\", lines[1]);
                 //console.log("before mkdir");
                 //fs.mkdirSync(newEndDirectory);
@@ -205,6 +203,7 @@ function checkOut(repoLocation, endDir, label) {
 
         }
     });
+    // createManifest(repoLocation)
 }
 
 /*
@@ -260,6 +259,7 @@ function clearFiles(folder) {
 
 }
 
+
 function copyWithArtID(startFolder, endFolder, directories) { //startFolder the location of the file we want to walk through
     const fileNames = fs.readdirSync(startFolder); // C//User//Desktop//CopyThis
     let relativePath = "";
@@ -312,16 +312,28 @@ function copyWithArtID(startFolder, endFolder, directories) { //startFolder the 
     });
 }
 
+function checkManifestNumber(directory) {
+    const fileNames = fs.readdirSync(directory);
+    let number = 0;
+    fileNames.forEach(function (file) {
+        if (file.substring(0,).localeCompare(".man") == 0) {
+            number = parseInt(file.charAt(file.length - 1));
+        }
+    });
+    return number + 1
+}
 
+// Figure out how to number manifest files and then call this method in checkout as well as other necessary methods
 function createManifest(directory) {
     //var manifestDirectory = fs.appendFile(directory.concat("\\", ".manifest.txt"), "")
     console.log("Started creating manifest method");
-    let manifestDirectory = directory.concat("\\", ".man-", manifestCount, ".rc");
-    manifestCount++;
+    let manifestNumber = checkManifestNumber(directory);
+    let manifestDirectory = directory.concat("\\", ".man-", manifestNumber, ".rc");
+
 
     // Creating the data that will preside inside the manifest file
-    let manifestData = "1) User Input: ".concat(userCommands[0], "\n", "2) Date: ",month.toString(), "-", day.toString(), "-", year.toString()," ", "Time: ",
-        hour.toString(), ":", minute.toString(), ":", second.toString(), "\n","3) Files", "\n");
+    let manifestData = "1) User Input: ".concat(userCommands[0], "\n", "2) Date: ",month.toString(), "-", day.toString(), "-", year.toString(), " ", "Time: ",
+        hour.toString(), ":", minute.toString(), ":", second.toString(), "\n", "3) Files", "\n");
     console.log(artIds);
 
     // Adding each Artifact Id and its relative path in the project source tree
