@@ -5,7 +5,6 @@
  - CreateRepo
      - Allows the user to create a repo based on a project source directory
  
- To-Be completed Use-Cases
  - List
      - Display all manifest file names as well as their labels
      
